@@ -15,12 +15,12 @@ from __future__ import annotations
 import asyncio
 import base64
 import logging
-import os
 from pathlib import Path
 from typing import Any
 
 import cache
 from config import (
+    DATASET_DIR,
     NIM_SEMAPHORE,
     NIM_SLEEP_SECONDS,
     STRATEGY1,
@@ -49,7 +49,7 @@ def _get_nim_semaphore() -> asyncio.Semaphore:
 def _image_to_data_url(path: str) -> str:
     full = Path(path)
     if not full.is_absolute():
-        full = Path(os.getcwd()) / path
+        full = DATASET_DIR / path
     with full.open("rb") as f:
         b64 = base64.b64encode(f.read()).decode("utf-8")
     return f"data:image/jpeg;base64,{b64}"

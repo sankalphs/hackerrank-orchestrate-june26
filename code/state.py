@@ -21,6 +21,7 @@ class VisionRecord(TypedDict):
 class ClaimState(TypedDict, total=False):
     user_id: str
     image_paths: list[str]
+    image_paths_original: list[str]
     user_claim: str
     claim_object: str
     strategy: str

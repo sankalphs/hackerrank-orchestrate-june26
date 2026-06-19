@@ -6,17 +6,19 @@ Aggregates Node A and Node B outputs using only if/else logic:
 - Contradiction detection (object, part, issue type, severity)
 - valid_image computation
 - supporting_image_ids (deterministic)
-- severity aggregation
+- severity aggregation (with damage-type-implied caps)
 - base_claim_status decision
 """
 
 from __future__ import annotations
 
+from collections import Counter
 from typing import Any
 
 from evidence import evaluate_evidence_standard, load_evidence_requirements
 from schema import (
     RISK_FLAGS,
+    SEVERITY_RANK,
     clamp_enum,
     clamp_risk_flags,
     max_severity,
@@ -24,6 +26,19 @@ from schema import (
 from state import ClaimState, VisionRecord
 
 OBJECT_MAP = {"car": "car", "laptop": "laptop", "package": "package"}
+
+DAMAGE_TYPE_SEVERITY_CAP = {
+    "scratch": "low",
+    "stain": "low",
+    "dent": "medium",
+    "crack": "medium",
+    "torn_packaging": "medium",
+    "crushed_packaging": "medium",
+    "water_damage": "medium",
+    "glass_shatter": "medium",
+    "broken_part": "medium",
+    "missing_part": "high",
+}
 
 
 def _usable_images(records: list[VisionRecord]) -> list[VisionRecord]:
@@ -38,6 +53,18 @@ def _part_matches(claimed_part: str, vision_parts: list[str]) -> bool:
         if vp == claimed_part:
             return True
     return False
+
+
+def _cap_severity_by_damage(severity: str, damage_type: str) -> str:
+    """Cap severity based on damage type. E.g. scratch is never above 'low'."""
+    if damage_type not in DAMAGE_TYPE_SEVERITY_CAP:
+        return severity
+    cap = DAMAGE_TYPE_SEVERITY_CAP[damage_type]
+    if severity in ("none", "unknown"):
+        return severity
+    if SEVERITY_RANK.get(severity, 0) > SEVERITY_RANK.get(cap, 3):
+        return cap
+    return severity
 
 
 def _issue_mismatch(claimed_issue: str, vision_damage: str, claim_object: str) -> bool:
@@ -73,6 +100,23 @@ def _severity_exaggeration(claimed_issue: str, vision_severities: list[str]) -> 
     return False
 
 
+def _refine_damage_type(
+    damage_type: str, severity: str, claim_object: str, parts: list[str]
+) -> str:
+    """Post-process the vision model's damage_type based on severity + part context.
+
+    If the vision model says 'glass_shatter' but the severity is only 'medium'
+    or lower, it's almost certainly a 'crack' (true shattering would be high
+    severity). Only applies to glass parts (windshield).
+    """
+    if damage_type == "glass_shatter" and severity in ("medium", "low", "none"):
+        if "windshield" in parts or claim_object == "laptop":
+            return "crack"
+    if damage_type == "water_damage" and severity in ("none", "low"):
+        return "stain"
+    return damage_type
+
+
 def circuit_node(state: ClaimState) -> dict[str, Any]:
     """The supreme logic gate. Pure Python — no LLM calls."""
     claim_object = state.get("claim_object", "")
@@ -100,6 +144,17 @@ def circuit_node(state: ClaimState) -> dict[str, Any]:
         claim_object, claimed_issue_type, usable_count, claimed_part_visible, requirements
     )
 
+    cropped_or_blurry_count = sum(
+        1
+        for r in vision_records
+        if any(qf in r.get("quality_flags", []) for qf in ("cropped_or_obstructed", "blurry_image"))
+    )
+    if len(vision_records) > 0 and cropped_or_blurry_count == len(vision_records):
+        evidence_met = False
+        evidence_reason = (
+            "All submitted images are cropped or blurry and cannot be used to evaluate the claim."
+        )
+
     contradiction_reasons: list[str] = []
     risk_flags: list[str] = []
     wrong_object_detected = False
@@ -125,34 +180,59 @@ def circuit_node(state: ClaimState) -> dict[str, Any]:
             if flag not in risk_flags:
                 risk_flags.append(flag)
 
-    if not claimed_part_visible and usable_count > 0:
+    part_not_visible_but_images_exist = (
+        not claimed_part_visible and usable_count > 0 and not wrong_object_detected
+    )
+
+    if part_not_visible_but_images_exist:
         if "damage_not_visible" not in risk_flags:
             risk_flags.append("damage_not_visible")
-        if "claimed part not visible" not in contradiction_reasons:
-            contradiction_reasons.append(
-                f"None of the usable images show the claimed part(s): {', '.join(claimed_parts)}"
-            )
 
     vision_damage_types = [r.get("damage_type", "unknown") for r in usable]
-    if claimed_issue_type not in ("unknown", "none") and vision_damage_types:
-        from collections import Counter
+    vision_damage_on_claimed_parts: list[str] = []
+    if claimed_part_visible:
+        for r in usable:
+            r_parts = r.get("normalized_parts", [])
+            if any(_part_matches(cp, r_parts) for cp in claimed_parts):
+                vision_damage_on_claimed_parts.append(r.get("damage_type", "unknown"))
 
-        damage_counts = Counter(d for d in vision_damage_types if d not in ("unknown", "none"))
+    if claimed_issue_type not in ("unknown", "none") and vision_damage_on_claimed_parts:
+        damage_counts = Counter(
+            d for d in vision_damage_on_claimed_parts if d not in ("unknown", "none")
+        )
         if damage_counts:
             majority_damage = damage_counts.most_common(1)[0][0]
             if _issue_mismatch(claimed_issue_type, majority_damage, claim_object):
                 if "claim_mismatch" not in risk_flags:
                     risk_flags.append("claim_mismatch")
                 contradiction_reasons.append(
-                    f"Claimed issue '{claimed_issue_type}' but vision shows '{majority_damage}'"
+                    f"Claimed issue '{claimed_issue_type}' but vision shows '{majority_damage}' on the claimed part"
+                )
+        elif claimed_part_visible and claimed_issue_type not in ("unknown", "none"):
+            no_damage_visible_on_part = all(
+                d in ("none", "unknown") for d in vision_damage_on_claimed_parts
+            )
+            if no_damage_visible_on_part:
+                if "claim_mismatch" not in risk_flags:
+                    risk_flags.append("claim_mismatch")
+                contradiction_reasons.append(
+                    f"Claimed issue '{claimed_issue_type}' but no damage is visible on the claimed part"
                 )
 
     vision_severities = [r.get("visible_severity", "unknown") for r in usable]
-    if _severity_exaggeration(claimed_issue_type, vision_severities):
+    vision_severities_on_claimed: list[str] = []
+    if claimed_part_visible:
+        for r in usable:
+            r_parts = r.get("normalized_parts", [])
+            if any(_part_matches(cp, r_parts) for cp in claimed_parts):
+                vision_severities_on_claimed.append(r.get("visible_severity", "unknown"))
+
+    sev_check = vision_severities_on_claimed or vision_severities
+    if _severity_exaggeration(claimed_issue_type, sev_check):
         if "claim_mismatch" not in risk_flags:
             risk_flags.append("claim_mismatch")
         contradiction_reasons.append(
-            f"Claim implies severe damage but vision shows only {max_severity(vision_severities)}"
+            f"Claim implies severe damage but vision shows only {max_severity(sev_check)}"
         )
 
     for r in vision_records:
@@ -192,22 +272,55 @@ def circuit_node(state: ClaimState) -> dict[str, Any]:
     if usable_count == 0 and len(vision_records) > 0:
         valid_image = False
 
-    aggregated_severity = max_severity(vision_severities) if vision_severities else "unknown"
+    if claimed_part_visible and vision_damage_on_claimed_parts:
+        refined_damages = []
+        for r in usable:
+            r_parts = r.get("normalized_parts", [])
+            if any(_part_matches(cp, r_parts) for cp in claimed_parts):
+                dmg = r.get("damage_type", "unknown")
+                sev = _cap_severity_by_damage(r.get("visible_severity", "unknown"), dmg)
+                refined_damages.append(_refine_damage_type(dmg, sev, claim_object, r_parts))
+        damage_counts = Counter(d for d in refined_damages if d not in ("unknown", "none"))
+        if damage_counts:
+            aggregated_issue_type = damage_counts.most_common(1)[0][0]
+        else:
+            aggregated_issue_type = claimed_issue_type
+        capped_severities: list[str] = []
+        for r in usable:
+            r_parts = r.get("normalized_parts", [])
+            if any(_part_matches(cp, r_parts) for cp in claimed_parts):
+                sev = r.get("visible_severity", "unknown")
+                dmg = r.get("damage_type", "unknown")
+                refined_dmg = _refine_damage_type(dmg, sev, claim_object, r_parts)
+                capped_severities.append(_cap_severity_by_damage(sev, refined_dmg))
+        aggregated_severity = max_severity(capped_severities) if capped_severities else "unknown"
+    else:
+        refined_all = []
+        for r, dmg, sev in zip(usable, vision_damage_types, vision_severities, strict=False):
+            r_parts = r.get("normalized_parts", [])
+            refined_all.append(_refine_damage_type(dmg, sev, claim_object, r_parts))
+        damage_counts = Counter(d for d in refined_all if d not in ("unknown", "none"))
+        if damage_counts:
+            aggregated_issue_type = damage_counts.most_common(1)[0][0]
+        else:
+            aggregated_issue_type = "unknown"
+        if not vision_severities:
+            aggregated_severity = "unknown"
+        else:
+            capped_severities = [
+                _cap_severity_by_damage(s, t)
+                for s, t in zip(vision_severities, vision_damage_types, strict=False)
+            ]
+            aggregated_severity = max_severity(capped_severities)
 
     primary_part = claimed_parts[0] if claimed_parts else "unknown"
     aggregated_object_part = primary_part
 
-    aggregated_issue_type = claimed_issue_type
-    if vision_damage_types:
-        from collections import Counter
-
-        damage_counts = Counter(d for d in vision_damage_types if d not in ("unknown", "none"))
-        if damage_counts:
-            aggregated_issue_type = damage_counts.most_common(1)[0][0]
-
     contradiction_flag = len(contradiction_reasons) > 0
 
-    if not evidence_met:
+    if part_not_visible_but_images_exist:
+        base_status = "not_enough_information"
+    elif not evidence_met:
         base_status = "not_enough_information"
     elif contradiction_flag:
         base_status = "contradicted"

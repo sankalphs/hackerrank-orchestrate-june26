@@ -36,14 +36,18 @@ from state import ClaimState, VisionRecord
 
 logger = logging.getLogger(__name__)
 
-_NIM_SEMAPHORE: asyncio.Semaphore | None = None
-
 
 def _get_nim_semaphore() -> asyncio.Semaphore:
-    global _NIM_SEMAPHORE
-    if _NIM_SEMAPHORE is None:
-        _NIM_SEMAPHORE = asyncio.Semaphore(NIM_SEMAPHORE)
-    return _NIM_SEMAPHORE
+    """Create or return the NIM semaphore for the current event loop."""
+    try:
+        current_loop = asyncio.get_running_loop()
+        if getattr(_get_nim_semaphore, "_loop", None) is not current_loop:
+            _get_nim_semaphore._sem = asyncio.Semaphore(NIM_SEMAPHORE)
+            _get_nim_semaphore._loop = current_loop
+        return _get_nim_semaphore._sem
+    except RuntimeError:
+        sem = asyncio.Semaphore(NIM_SEMAPHORE)
+        return sem
 
 
 def _image_to_data_url(path: str) -> str:

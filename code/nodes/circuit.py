@@ -40,6 +40,29 @@ DAMAGE_TYPE_SEVERITY_CAP = {
     "missing_part": "high",
 }
 
+PART_SEVERITY_FLOOR = {}
+
+_SEVERITY_ORDER = {"none": 0, "low": 1, "medium": 2, "high": 3, "unknown": -1}
+
+
+def _clamp_severity_with_part(severity, damage_type, part):
+    """Apply damage-type cap + part-aware floor."""
+    if severity in ("none", "unknown") or not damage_type:
+        return severity
+    cap = DAMAGE_TYPE_SEVERITY_CAP.get(damage_type)
+    if cap:
+        cap_rank = _SEVERITY_ORDER.get(cap, 3)
+        sev_rank = _SEVERITY_ORDER.get(severity, 1)
+        if sev_rank > cap_rank:
+            severity = cap
+    floor = PART_SEVERITY_FLOOR.get((damage_type, part))
+    if floor:
+        floor_rank = _SEVERITY_ORDER.get(floor, 1)
+        sev_rank = _SEVERITY_ORDER.get(severity, 1)
+        if sev_rank < floor_rank:
+            severity = floor
+    return severity
+
 
 def _usable_images(records: list[VisionRecord]) -> list[VisionRecord]:
     return [r for r in records if r.get("is_usable_image", True)]
@@ -243,12 +266,9 @@ def circuit_node(state: ClaimState) -> dict[str, Any]:
             if contents_claim_with_no_visible_damage:
                 if "damage_not_visible" not in risk_flags:
                     risk_flags.append("damage_not_visible")
-            elif no_damage_visible_on_part:
-                if "claim_mismatch" not in risk_flags:
-                    risk_flags.append("claim_mismatch")
-                contradiction_reasons.append(
-                    f"Claimed issue '{claimed_issue_type}' but no damage is visible on the claimed part"
-                )
+            elif no_damage_visible_on_part and claimed_issue_type not in ("missing_part",):
+                if "damage_not_visible" not in risk_flags:
+                    risk_flags.append("damage_not_visible")
 
     vision_severities = [r.get("visible_severity", "unknown") for r in usable]
     vision_severities_on_claimed: list[str] = []
@@ -362,7 +382,13 @@ def circuit_node(state: ClaimState) -> dict[str, Any]:
                 sev = r.get("visible_severity", "unknown")
                 dmg = r.get("damage_type", "unknown")
                 refined_dmg = _refine_damage_type(dmg, sev, claim_object, r_parts)
-                capped_severities.append(_cap_severity_by_damage(sev, refined_dmg))
+                matched_part = next(
+                    (cp for cp in claimed_parts if any(_part_matches(cp, p) for p in r_parts)),
+                    claimed_parts[0],
+                )
+                clamped = _cap_severity_by_damage(sev, refined_dmg)
+                clamped = _clamp_severity_with_part(clamped, refined_dmg, matched_part)
+                capped_severities.append(clamped)
         aggregated_severity = max_severity(capped_severities) if capped_severities else "unknown"
     else:
         refined_all = []
@@ -377,10 +403,12 @@ def circuit_node(state: ClaimState) -> dict[str, Any]:
         if not vision_severities:
             aggregated_severity = "unknown"
         else:
-            capped_severities = [
-                _cap_severity_by_damage(s, t)
-                for s, t in zip(vision_severities, vision_damage_types, strict=False)
-            ]
+            capped_severities = []
+            for s, t in zip(vision_severities, vision_damage_types, strict=False):
+                refined_t = _refine_damage_type(t, s, claim_object, [])
+                clamped = _cap_severity_by_damage(s, refined_t)
+                clamped = _clamp_severity_with_part(clamped, refined_t, claimed_parts[0])
+                capped_severities.append(clamped)
             aggregated_severity = max_severity(capped_severities)
 
     primary_part = claimed_parts[0] if claimed_parts else "unknown"

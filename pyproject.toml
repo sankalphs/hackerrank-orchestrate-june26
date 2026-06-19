@@ -1,0 +1,22 @@
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.pytest.ini_options]
+testpaths = ["code/tests"]
+addopts = "-q --import-mode=importlib"
+pythonpath = ["code"]
+markers = [
+    "e2e: end-to-end tests (excluded from CI)",
+    "playwright: browser tests (excluded from CI)",
+]

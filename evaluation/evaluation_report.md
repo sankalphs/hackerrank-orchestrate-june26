@@ -1,69 +1,57 @@
 # Evaluation Report
 
-_Generated: 2026-06-20T00:29:22.377676_
+_Generated: 2026-06-20T02:20:12.759754_
 
 ## Summary
 
-- **Winning strategy:** `m3_only` (weighted score 71.7%)
+- **Winning strategy:** `m3_only` (weighted score 73.5%)
 - **Rows evaluated:** 20 (sample_claims.csv)
 
 ## Strategy 1: `m3_only` (M3 does text + vision)
 
-- Weighted score: **71.7%**
+- Weighted score: **73.5%**
 - Matched rows: 20
 
-### Per-column accuracy (Jaccard >= 0.5 for set fields)
+### Per-column accuracy
 | Column | Accuracy |
 |---|---|
 | evidence_standard_met | 90.0% (18/20) |
 | evidence_standard_met_reason | 0.0% (0/20) |
-| risk_flags | 60.0% (12/20) |
-| issue_type | 55.0% (11/20) |
-| object_part | 85.0% (17/20) |
+| risk_flags | 40.0% (8/20) |
+| issue_type | 60.0% (12/20) |
+| object_part | 95.0% (19/20) |
 | claim_status | 70.0% (14/20) |
 | claim_status_justification | 0.0% (0/20) |
-| supporting_image_ids | 80.0% (16/20) |
-| valid_image | 90.0% (18/20) |
-| severity | 55.0% (11/20) |
-
-### Set-field exact-match accuracy (reference)
-| Column | Exact match |
-|---|---|
-| supporting_image_ids | 70.0% |
-| risk_flags | 40.0% |
+| supporting_image_ids | 60.0% (12/20) |
+| valid_image | 85.0% (17/20) |
+| severity | 50.0% (10/20) |
 
 ### Claim status confusion matrix
 | actual \ predicted | contradicted | not_enough_information | supported |
 |---|---|---|---|
 | **contradicted** | 3 | 0 | 2 |
 | **not_enough_information** | 2 | 0 | 0 |
-| **supported** | 1 | 1 | 11 |
+| **supported** | 2 | 0 | 11 |
 
 
 ## Strategy 2: `m3_text_nemotron_vision` (M3 text + Nemotron Omni vision)
 
-- Weighted score: **69.3%**
+- Weighted score: **68.5%**
 - Matched rows: 20
 
-### Per-column accuracy (Jaccard >= 0.5 for set fields)
+### Per-column accuracy
 | Column | Accuracy |
 |---|---|
-| evidence_standard_met | 90.0% (18/20) |
+| evidence_standard_met | 85.0% (17/20) |
 | evidence_standard_met_reason | 0.0% (0/20) |
-| risk_flags | 55.0% (11/20) |
-| issue_type | 55.0% (11/20) |
-| object_part | 85.0% (17/20) |
+| risk_flags | 40.0% (8/20) |
+| issue_type | 60.0% (12/20) |
+| object_part | 80.0% (16/20) |
 | claim_status | 65.0% (13/20) |
 | claim_status_justification | 0.0% (0/20) |
-| supporting_image_ids | 80.0% (16/20) |
-| valid_image | 90.0% (18/20) |
-| severity | 55.0% (11/20) |
-
-### Set-field exact-match accuracy (reference)
-| Column | Exact match |
-|---|---|
-| supporting_image_ids | 70.0% |
-| risk_flags | 35.0% |
+| supporting_image_ids | 55.0% (11/20) |
+| valid_image | 85.0% (17/20) |
+| severity | 50.0% (10/20) |
 
 ### Claim status confusion matrix
 | actual \ predicted | contradicted | not_enough_information | supported |
@@ -80,11 +68,11 @@ _Generated: 2026-06-20T00:29:22.377676_
 | Total API calls | 69 | 40 |
 | Cached calls | 0 | 29 |
 | Errors | 0 | 0 |
-| Prompt tokens | 80,340 | 19,540 |
-| Completion tokens | 15,795 | 5,707 |
-| Total tokens | 96,135 | 25,247 |
-| p50 latency (ms) | 5607 | 5100 |
-| p95 latency (ms) | 17915 | 26054 |
+| Prompt tokens | 80,390 | 19,559 |
+| Completion tokens | 13,271 | 6,275 |
+| Total tokens | 93,661 | 25,834 |
+| p50 latency (ms) | 5189 | 4479 |
+| p95 latency (ms) | 45207 | 12586 |
 
 
 ### Models Used

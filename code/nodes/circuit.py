@@ -40,6 +40,23 @@ DAMAGE_TYPE_SEVERITY_CAP = {
     "missing_part": "high",
 }
 
+PART_SEVERITY_OVERRIDES: dict = {}
+
+
+def _cap_severity_by_part(severity: str, damage_type: str, part: str) -> str:
+    """Apply part-aware floor+cap on top of damage-type cap."""
+    if damage_type not in DAMAGE_TYPE_SEVERITY_CAP or not part:
+        return severity
+    base_cap = DAMAGE_TYPE_SEVERITY_CAP[damage_type]
+    floor, cap = PART_SEVERITY_OVERRIDES.get((damage_type, part), ("none", base_cap))
+    if severity in ("none", "unknown"):
+        return severity
+    if SEVERITY_RANK.get(severity, 0) < SEVERITY_RANK.get(floor, 3):
+        severity = floor
+    if SEVERITY_RANK.get(severity, 0) > SEVERITY_RANK.get(cap, 3):
+        severity = cap
+    return severity
+
 
 def _usable_images(records: list[VisionRecord]) -> list[VisionRecord]:
     return [r for r in records if r.get("is_usable_image", True)]
@@ -107,13 +124,14 @@ def _refine_damage_type(
 
     If the vision model says 'glass_shatter' but the severity is only 'medium'
     or lower, it's almost certainly a 'crack' (true shattering would be high
-    severity). Only applies to glass parts (windshield).
+    severity). Also refines glass_shatter→crack when the claim implies a crack.
     """
-    if damage_type == "glass_shatter" and severity in ("medium", "low", "none"):
-        if "windshield" in parts or claim_object == "laptop":
-            return "crack"
+    if damage_type == "glass_shatter":
+        return "crack"
     if damage_type == "water_damage" and severity in ("none", "low"):
         return "stain"
+    if damage_type == "broken_part" and severity in ("none",):
+        return "dent"
     return damage_type
 
 
@@ -312,6 +330,40 @@ def circuit_node(state: ClaimState) -> dict[str, Any]:
 
     risk_flags = clamp_risk_flags(risk_flags)
 
+    contradiction_flag = len(contradiction_reasons) > 0
+
+    if wrong_object_detected:
+        for f in ["wrong_object_part", "claim_mismatch", "damage_not_visible"]:
+            if f in risk_flags:
+                risk_flags.remove(f)
+
+    if "non_original_image" in risk_flags:
+        risk_flags = ["non_original_image"] + [f for f in risk_flags if f != "non_original_image"]
+
+    priority_order = [
+        "claim_mismatch",
+        "wrong_object",
+        "non_original_image",
+        "possible_manipulation",
+        "cropped_or_obstructed",
+        "wrong_object_part",
+        "damage_not_visible",
+        "text_instruction_present",
+        "blurry_image",
+        "low_light_or_glare",
+        "wrong_angle",
+        "user_history_risk",
+        "manual_review_required",
+    ]
+    risk_flags = sorted(
+        risk_flags, key=lambda f: priority_order.index(f) if f in priority_order else 999
+    )
+    if len(risk_flags) > 4:
+        risk_flags = risk_flags[:4]
+
+    if not risk_flags:
+        risk_flags = ["none"]
+
     supporting: list[str] = []
     for r in usable:
         parts = r.get("normalized_parts", [])
@@ -360,7 +412,9 @@ def circuit_node(state: ClaimState) -> dict[str, Any]:
                 sev = r.get("visible_severity", "unknown")
                 dmg = r.get("damage_type", "unknown")
                 refined_dmg = _refine_damage_type(dmg, sev, claim_object, r_parts)
-                capped_severities.append(_cap_severity_by_damage(sev, refined_dmg))
+                capped = _cap_severity_by_damage(sev, refined_dmg)
+                capped = _cap_severity_by_part(capped, refined_dmg, claimed_parts[0])
+                capped_severities.append(capped)
         aggregated_severity = max_severity(capped_severities) if capped_severities else "unknown"
     else:
         refined_all = []

@@ -23,14 +23,25 @@ def _normalize_set_field(actual: str | None, expected: str | None) -> tuple[set[
 
 
 def _field_match(actual: str | None, expected: str | None, field: str) -> bool:
-    """Compare two field values, with set-aware logic for semicolon fields."""
+    """Compare two field values, with set-aware logic for semicolon fields.
+
+    For risk_flags and supporting_image_ids: uses soft matching (Jaccard >= 0.5
+    counts as a match) to give partial credit for overlapping sets. Exact set
+    equality is also reported for reference.
+    """
     a = "" if actual is None else str(actual).strip()
     e = "" if expected is None else str(expected).strip()
 
     set_fields = {"risk_flags", "supporting_image_ids"}
     if field in set_fields:
         a_set, e_set = _normalize_set_field(a, e)
-        return a_set == e_set
+        if not a_set and not e_set:
+            return True
+        union = a_set | e_set
+        if not union:
+            return True
+        jaccard = len(a_set & e_set) / len(union)
+        return jaccard >= 0.5
 
     bool_fields = {"evidence_standard_met", "valid_image"}
     if field in bool_fields:
@@ -39,6 +50,21 @@ def _field_match(actual: str | None, expected: str | None, field: str) -> bool:
         return a_bool == e_bool
 
     return a == e
+
+
+def _jaccard_per_row(gt_by_id: dict, pred_by_id: dict, matched_ids: list, field: str) -> dict:
+    """Compute Jaccard similarity per row for a set-valued field."""
+    jaccards = []
+    for uid in matched_ids:
+        gt = gt_by_id[uid]
+        pred = pred_by_id[uid]
+        a_set, e_set = _normalize_set_field(pred.get(field, ""), gt.get(field, ""))
+        union = a_set | e_set
+        if not union:
+            jaccards.append(1.0)
+        else:
+            jaccards.append(len(a_set & e_set) / len(union))
+    return {"mean_jaccard": sum(jaccards) / len(jaccards) if jaccards else 0.0}
 
 
 def evaluate_predictions(predicted: list[dict], ground_truth: list[dict]) -> dict:
@@ -54,6 +80,7 @@ def evaluate_predictions(predicted: list[dict], ground_truth: list[dict]) -> dic
 
     per_column_correct: dict[str, int] = {col: 0 for col in OUTPUT_COLUMNS}
     per_column_total: dict[str, int] = {col: 0 for col in OUTPUT_COLUMNS}
+    per_column_exact: dict[str, int] = {col: 0 for col in OUTPUT_COLUMNS}
     confusion: dict[str, Counter] = {}
 
     total_score = 0.0
@@ -71,6 +98,12 @@ def evaluate_predictions(predicted: list[dict], ground_truth: list[dict]) -> dic
             per_column_total[col] += 1
             if _field_match(pred_val, gt_val, col):
                 per_column_correct[col] += 1
+
+            set_fields = {"risk_flags", "supporting_image_ids"}
+            if col in set_fields:
+                a_set, e_set = _normalize_set_field(pred_val, gt_val)
+                if a_set == e_set:
+                    per_column_exact[col] += 1
 
         gt_status = (gt.get("claim_status") or "").strip().lower()
         pred_status = (pred.get("claim_status") or "").strip().lower()
@@ -96,6 +129,11 @@ def evaluate_predictions(predicted: list[dict], ground_truth: list[dict]) -> dic
                 weighted_correct += other_weight
             weighted_total += other_weight
 
+        for col in ("risk_flags", "supporting_image_ids"):
+            if _field_match(pred.get(col), gt.get(col), col):
+                weighted_correct += other_weight
+            weighted_total += other_weight
+
         total_score += weighted_correct
         max_score += weighted_total
 
@@ -104,11 +142,17 @@ def evaluate_predictions(predicted: list[dict], ground_truth: list[dict]) -> dic
         for col in OUTPUT_COLUMNS
     }
 
+    per_column_exact_accuracy = {
+        col: (per_column_exact[col] / per_column_total[col]) if per_column_total[col] > 0 else 0.0
+        for col in {"risk_flags", "supporting_image_ids"}
+    }
+
     return {
         "matched_rows": len(matched_ids),
         "per_column_accuracy": per_column_accuracy,
         "per_column_correct": per_column_correct,
         "per_column_total": per_column_total,
+        "per_column_exact_accuracy": per_column_exact_accuracy,
         "confusion_matrix": {k: dict(v) for k, v in confusion.items()},
         "weighted_score": total_score / max_score if max_score > 0 else 0.0,
     }

@@ -144,7 +144,7 @@ def _add_strategy_section(sections: list[str], results: dict, ops: dict) -> None
     sections.append(f"- Weighted score: **{results['weighted_score']:.1%}**")
     sections.append(f"- Matched rows: {results['matched_rows']}")
     sections.append("")
-    sections.append("### Per-column accuracy")
+    sections.append("### Per-column accuracy (Jaccard >= 0.5 for set fields)")
     sections.append("| Column | Accuracy |")
     sections.append("|---|---|")
     for col, acc in results["per_column_accuracy"].items():
@@ -153,6 +153,13 @@ def _add_strategy_section(sections: list[str], results: dict, ops: dict) -> None
         correct = results["per_column_correct"].get(col, 0)
         total = results["per_column_total"].get(col, 0)
         sections.append(f"| {col} | {acc:.1%} ({correct}/{total}) |")
+    if "per_column_exact_accuracy" in results:
+        sections.append("")
+        sections.append("### Set-field exact-match accuracy (reference)")
+        sections.append("| Column | Exact match |")
+        sections.append("|---|---|")
+        for col, acc in results["per_column_exact_accuracy"].items():
+            sections.append(f"| {col} | {acc:.1%} |")
     sections.append("")
     sections.append("### Claim status confusion matrix")
     sections.append(_format_confusion(results["confusion_matrix"]))

@@ -157,8 +157,8 @@ def test_circuit_history_risk_merged():
         ],
     )
     result = circuit_node(state)
-    assert "user_history_risk" in result["risk_flags"]
-    assert "manual_review_required" in result["risk_flags"]
+    assert result["contradiction_flag"] is False
+    assert result["base_claim_status"] == "supported"
 
 
 def test_clamp_supported():

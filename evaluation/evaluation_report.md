@@ -1,64 +1,64 @@
 # Evaluation Report
 
-_Generated: 2026-06-19T16:13:28.610244_
+_Generated: 2026-06-19T22:23:57.556571_
 
 ## Summary
 
-- **Winning strategy:** `m3_text_nemotron_vision` (weighted score 68.8%)
+- **Winning strategy:** `m3_only` (weighted score 74.2%)
 - **Rows evaluated:** 20 (sample_claims.csv)
 
 ## Strategy 1: `m3_only` (M3 does text + vision)
 
-- Weighted score: **68.1%**
+- Weighted score: **74.2%**
 - Matched rows: 20
 
 ### Per-column accuracy
 | Column | Accuracy |
 |---|---|
-| evidence_standard_met | 80.0% (16/20) |
+| evidence_standard_met | 90.0% (18/20) |
 | evidence_standard_met_reason | 0.0% (0/20) |
-| risk_flags | 50.0% (10/20) |
+| risk_flags | 35.0% (7/20) |
 | issue_type | 55.0% (11/20) |
-| object_part | 80.0% (16/20) |
-| claim_status | 65.0% (13/20) |
+| object_part | 85.0% (17/20) |
+| claim_status | 75.0% (15/20) |
 | claim_status_justification | 0.0% (0/20) |
-| supporting_image_ids | 75.0% (15/20) |
+| supporting_image_ids | 70.0% (14/20) |
 | valid_image | 90.0% (18/20) |
 | severity | 55.0% (11/20) |
 
 ### Claim status confusion matrix
 | actual \ predicted | contradicted | not_enough_information | supported |
 |---|---|---|---|
-| **contradicted** | 2 | 1 | 2 |
-| **not_enough_information** | 1 | 1 | 0 |
-| **supported** | 1 | 2 | 10 |
+| **contradicted** | 4 | 0 | 1 |
+| **not_enough_information** | 2 | 0 | 0 |
+| **supported** | 2 | 0 | 11 |
 
 
 ## Strategy 2: `m3_text_nemotron_vision` (M3 text + Nemotron Omni vision)
 
-- Weighted score: **68.8%**
+- Weighted score: **74.2%**
 - Matched rows: 20
 
 ### Per-column accuracy
 | Column | Accuracy |
 |---|---|
-| evidence_standard_met | 80.0% (16/20) |
+| evidence_standard_met | 90.0% (18/20) |
 | evidence_standard_met_reason | 0.0% (0/20) |
-| risk_flags | 50.0% (10/20) |
+| risk_flags | 35.0% (7/20) |
 | issue_type | 55.0% (11/20) |
 | object_part | 85.0% (17/20) |
-| claim_status | 65.0% (13/20) |
+| claim_status | 75.0% (15/20) |
 | claim_status_justification | 0.0% (0/20) |
-| supporting_image_ids | 75.0% (15/20) |
+| supporting_image_ids | 70.0% (14/20) |
 | valid_image | 90.0% (18/20) |
 | severity | 55.0% (11/20) |
 
 ### Claim status confusion matrix
 | actual \ predicted | contradicted | not_enough_information | supported |
 |---|---|---|---|
-| **contradicted** | 2 | 1 | 2 |
-| **not_enough_information** | 1 | 1 | 0 |
-| **supported** | 1 | 2 | 10 |
+| **contradicted** | 4 | 0 | 1 |
+| **not_enough_information** | 2 | 0 | 0 |
+| **supported** | 2 | 0 | 11 |
 
 
 ## Operational Analysis
@@ -68,11 +68,11 @@ _Generated: 2026-06-19T16:13:28.610244_
 | Total API calls | 69 | 40 |
 | Cached calls | 0 | 29 |
 | Errors | 0 | 0 |
-| Prompt tokens | 80,313 | 19,475 |
-| Completion tokens | 13,464 | 5,545 |
-| Total tokens | 93,777 | 25,020 |
-| p50 latency (ms) | 8035 | 5024 |
-| p95 latency (ms) | 21116 | 13518 |
+| Prompt tokens | 80,378 | 19,551 |
+| Completion tokens | 14,317 | 5,587 |
+| Total tokens | 94,695 | 25,138 |
+| p50 latency (ms) | 8416 | 6407 |
+| p95 latency (ms) | 30280 | 35064 |
 
 
 ### Models Used
@@ -97,4 +97,4 @@ _Generated: 2026-06-19T16:13:28.610244_
 
 ## Recommended Configuration for test set
 
-Use **`m3_text_nemotron_vision`** for the final `output.csv` generation on `dataset/claims.csv`.
+Use **`m3_only`** for the final `output.csv` generation on `dataset/claims.csv`.

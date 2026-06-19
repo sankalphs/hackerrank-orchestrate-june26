@@ -159,9 +159,30 @@ def circuit_node(state: ClaimState) -> dict[str, Any]:
     risk_flags: list[str] = []
     wrong_object_detected = False
 
+    other_count = 0
+    specific_count = 0
     for r in vision_records:
         vobj = (r.get("vision_detected_object") or "").lower().strip()
-        if vobj not in ("", "unknown") and vobj != claim_object and vobj in OBJECT_MAP:
+        if vobj == "other":
+            other_count += 1
+        elif vobj in OBJECT_MAP:
+            specific_count += 1
+
+    for r in vision_records:
+        vobj = (r.get("vision_detected_object") or "").lower().strip()
+        if (
+            vobj == "other"
+            and claim_object in ("car", "laptop", "package")
+            and other_count > specific_count
+        ):
+            wrong_object_detected = True
+            if "wrong_object" not in risk_flags:
+                risk_flags.append("wrong_object")
+            if "object mismatch" not in contradiction_reasons:
+                contradiction_reasons.append(
+                    f"Image {r['image_id']} does not show a {claim_object}"
+                )
+        elif vobj not in ("", "unknown") and vobj != claim_object and vobj in OBJECT_MAP:
             wrong_object_detected = True
             if "wrong_object" not in risk_flags:
                 risk_flags.append("wrong_object")
@@ -212,7 +233,15 @@ def circuit_node(state: ClaimState) -> dict[str, Any]:
             no_damage_visible_on_part = all(
                 d in ("none", "unknown") for d in vision_damage_on_claimed_parts
             )
-            if no_damage_visible_on_part:
+            contents_claim_with_no_visible_damage = (
+                "contents" in claimed_parts
+                and claimed_issue_type in ("missing_part",)
+                and no_damage_visible_on_part
+            )
+            if contents_claim_with_no_visible_damage:
+                if "damage_not_visible" not in risk_flags:
+                    risk_flags.append("damage_not_visible")
+            elif no_damage_visible_on_part:
                 if "claim_mismatch" not in risk_flags:
                     risk_flags.append("claim_mismatch")
                 contradiction_reasons.append(
@@ -234,6 +263,42 @@ def circuit_node(state: ClaimState) -> dict[str, Any]:
         contradiction_reasons.append(
             f"Claim implies severe damage but vision shows only {max_severity(sev_check)}"
         )
+
+    transcript = state.get("user_claim", "") or ""
+    transcript_lower = transcript.lower()
+    severity_words = [
+        "bad",
+        "pretty bad",
+        "very bad",
+        "extremely",
+        "severe",
+        "severely",
+        "heavy",
+        "heavily",
+        "completely",
+        "totally",
+        "destroyed",
+        "shattered",
+        "major",
+        "massive",
+        "huge",
+        "terrible",
+    ]
+    transcript_severity_exaggeration = any(w in transcript_lower for w in severity_words)
+    if (
+        transcript_severity_exaggeration
+        and sev_check
+        and max_severity(sev_check) in ("none", "low")
+        and claimed_issue_type not in ("unknown", "none")
+    ):
+        if "claim_mismatch" not in risk_flags:
+            risk_flags.append("claim_mismatch")
+        if not any(
+            "severity" in r.lower() or "exaggerat" in r.lower() for r in contradiction_reasons
+        ):
+            contradiction_reasons.append(
+                "User describes severe damage but images show only minor issues"
+            )
 
     for r in vision_records:
         for qf in r.get("quality_flags", []):
@@ -272,7 +337,10 @@ def circuit_node(state: ClaimState) -> dict[str, Any]:
     if usable_count == 0 and len(vision_records) > 0:
         valid_image = False
 
-    if claimed_part_visible and vision_damage_on_claimed_parts:
+    if wrong_object_detected:
+        aggregated_issue_type = "unknown"
+        aggregated_severity = "unknown"
+    elif claimed_part_visible and vision_damage_on_claimed_parts:
         refined_damages = []
         for r in usable:
             r_parts = r.get("normalized_parts", [])
@@ -314,11 +382,13 @@ def circuit_node(state: ClaimState) -> dict[str, Any]:
             aggregated_severity = max_severity(capped_severities)
 
     primary_part = claimed_parts[0] if claimed_parts else "unknown"
-    aggregated_object_part = primary_part
+    aggregated_object_part = "unknown" if wrong_object_detected else primary_part
 
     contradiction_flag = len(contradiction_reasons) > 0
 
-    if part_not_visible_but_images_exist:
+    if wrong_object_detected:
+        base_status = "contradicted"
+    elif part_not_visible_but_images_exist:
         base_status = "not_enough_information"
     elif not evidence_met:
         base_status = "not_enough_information"

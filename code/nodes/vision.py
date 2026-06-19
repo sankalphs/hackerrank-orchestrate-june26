@@ -54,8 +54,30 @@ def _image_to_data_url(path: str) -> str:
     full = Path(path)
     if not full.is_absolute():
         full = DATASET_DIR / path
-    with full.open("rb") as f:
-        b64 = base64.b64encode(f.read()).decode("utf-8")
+    raw = full.read_bytes()
+
+    header = raw[:20]
+    is_avif = b"ftypavif" in header or b"ftypavis" in header
+    if is_avif:
+        from io import BytesIO
+
+        try:
+            from PIL import Image
+        except ImportError:
+            Image = None
+        if Image is not None:
+            try:
+                img = Image.open(BytesIO(raw))
+                if img.mode in ("RGBA", "LA", "P"):
+                    img = img.convert("RGB")
+                buf = BytesIO()
+                img.save(buf, format="JPEG", quality=90)
+                raw = buf.getvalue()
+            except Exception as e:
+                logger.warning("AVIF conversion failed for %s: %s", path, e)
+                raise
+
+    b64 = base64.b64encode(raw).decode("utf-8")
     return f"data:image/jpeg;base64,{b64}"
 
 
@@ -118,37 +140,83 @@ async def _call_vision_single(image_path: str, strategy: str, claim_object: str)
         )
         return _normalize_vision_record(cached, image_id, image_path, claim_object)
 
-    messages = _build_vision_messages(image_path, image_id)
-
-    if strategy == STRATEGY1:
-        model = VISION_MODEL_STRATEGY1
-        _, parsed = await asyncio.to_thread(
-            call_token_router,
-            messages,
-            model=model,
-            max_tokens=VISION_MAX_TOKENS,
-            temperature=VISION_TEMPERATURE,
-            extra_body={"chat_template_kwargs": {"enable_thinking": False}},
+    try:
+        messages = _build_vision_messages(image_path, image_id)
+    except Exception as e:
+        logger.warning("Image build failed for %s: %s", image_id, e)
+        cache.log_call(
             node="vision",
+            model=(VISION_MODEL_STRATEGY1 if strategy == STRATEGY1 else VISION_MODEL_STRATEGY2),
             strategy=strategy,
             image_id=image_id,
+            error=f"image_build_failed: {type(e).__name__}: {str(e)[:100]}",
         )
+        return VisionRecord(
+            image_id=image_id,
+            image_path=image_path,
+            vision_detected_object="unknown",
+            vision_detected_parts=[],
+            normalized_parts=[],
+            damage_type="unknown",
+            visible_severity="unknown",
+            is_usable_image=False,
+            quality_flags=[],
+            raw_error=f"image_build_failed: {type(e).__name__}",
+        )
+
+    parsed = None
+    api_error = None
+    if strategy == STRATEGY1:
+        model = VISION_MODEL_STRATEGY1
+        try:
+            _, parsed = await asyncio.to_thread(
+                call_token_router,
+                messages,
+                model=model,
+                max_tokens=VISION_MAX_TOKENS,
+                temperature=VISION_TEMPERATURE,
+                extra_body={"chat_template_kwargs": {"enable_thinking": False}},
+                node="vision",
+                strategy=strategy,
+                image_id=image_id,
+            )
+        except Exception as e:
+            api_error = f"{type(e).__name__}: {str(e)[:200]}"
+            logger.warning("Vision API failed for %s: %s", image_id, api_error)
     else:
         model = VISION_MODEL_STRATEGY2
         sem = _get_nim_semaphore()
         async with sem:
             await asyncio.sleep(NIM_SLEEP_SECONDS)
-            _, parsed = await asyncio.to_thread(
-                call_nvidia,
-                messages,
-                model=model,
-                max_tokens=VISION_MAX_TOKENS,
-                temperature=VISION_TEMPERATURE,
-                extra_body={"chat_template_kwargs": {"enable_thinking": False}, "top_k": 1},
-                node="vision",
-                strategy=strategy,
-                image_id=image_id,
-            )
+            try:
+                _, parsed = await asyncio.to_thread(
+                    call_nvidia,
+                    messages,
+                    model=model,
+                    max_tokens=VISION_MAX_TOKENS,
+                    temperature=VISION_TEMPERATURE,
+                    extra_body={"chat_template_kwargs": {"enable_thinking": False}, "top_k": 1},
+                    node="vision",
+                    strategy=strategy,
+                    image_id=image_id,
+                )
+            except Exception as e:
+                api_error = f"{type(e).__name__}: {str(e)[:200]}"
+                logger.warning("Vision API failed for %s: %s", image_id, api_error)
+
+    if api_error and parsed is None:
+        return VisionRecord(
+            image_id=image_id,
+            image_path=image_path,
+            vision_detected_object="unknown",
+            vision_detected_parts=[],
+            normalized_parts=[],
+            damage_type="unknown",
+            visible_severity="unknown",
+            is_usable_image=False,
+            quality_flags=[],
+            raw_error=api_error,
+        )
 
     if not parsed or not isinstance(parsed, dict):
         record: VisionRecord = VisionRecord(

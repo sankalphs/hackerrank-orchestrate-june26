@@ -1,0 +1,1272 @@
+{
+"816433f6215ebca26b1bf002f11440a2419690f4784b4f713545b0d25943eeb4": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_001\\img_1.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"rear_bumper",
+"trunk",
+"body",
+"taillight",
+"license_plate_area"
+],
+"normalized_parts": [
+"rear_bumper",
+"body",
+"taillight"
+],
+"damage_type": "dent",
+"visible_severity": "high",
+"is_usable_image": true,
+"quality_flags": [
+"low_light_or_glare"
+],
+"raw_error": null
+},
+"5b82298b7675570206b5e05cbd4b7f6cc39030f29a39e1d7ffd75c251c76bd54": {
+"image_id": "img_2",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_002\\img_2.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"front_bumper",
+"hood",
+"windshield",
+"headlight",
+"side_mirror",
+"body"
+],
+"normalized_parts": [
+"front_bumper",
+"hood",
+"windshield",
+"headlight",
+"side_mirror",
+"body"
+],
+"damage_type": "none",
+"visible_severity": "none",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"70aaa2bdd7581074af6717023e02d85a7191c157b3cbfc39f207c54c7106ddfd": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_002\\img_1.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"front_bumper",
+"headlight",
+"hood",
+"fender"
+],
+"normalized_parts": [
+"front_bumper",
+"headlight",
+"hood",
+"fender"
+],
+"damage_type": "dent",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"2cdbf607acf5aa353b9517219ffe955777ba6489d0d210bab5d09a62ae963e3f": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_003\\img_1.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"windshield",
+"hood",
+"wiper"
+],
+"normalized_parts": [
+"windshield",
+"hood",
+"unknown"
+],
+"damage_type": "glass_shatter",
+"visible_severity": "high",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"0114af9dca6e3cdf5ef88b014cf2057c733d96f02eb3235374d6c1ff0f2044ee": {
+"image_id": "img_2",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_003\\img_2.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"windshield",
+"hood"
+],
+"normalized_parts": [
+"windshield",
+"hood"
+],
+"damage_type": "broken_part",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"5f47f87f61551d68d1d3c567616d1a713ae4c3fcb59f918edccf6780180478e9": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_004\\img_1.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"side_mirror",
+"door",
+"windshield"
+],
+"normalized_parts": [
+"side_mirror",
+"door",
+"windshield"
+],
+"damage_type": "glass_shatter",
+"visible_severity": "high",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"1cc42acf5a63251985c90ef5cf8fb0b4de8414aa526a70dc9da40c97f200ff7c": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_005\\img_1.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"quarter_panel",
+"fender",
+"side_mirror",
+"wheel",
+"body"
+],
+"normalized_parts": [
+"quarter_panel",
+"fender",
+"side_mirror",
+"body"
+],
+"damage_type": "dent",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [
+"blurry_image"
+],
+"raw_error": null
+},
+"b8762ee065740f745038affd11796a53cc5fff61587795a23c51a40f3bb83036": {
+"image_id": "img_2",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_005\\img_2.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"rear_bumper",
+"taillight",
+"body",
+"hatch",
+"bumper_guard"
+],
+"normalized_parts": [
+"rear_bumper",
+"taillight",
+"body",
+"unknown"
+],
+"damage_type": "none",
+"visible_severity": "none",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"86dd92646ba36ed08b22c734c1c1d2ddd9853340e141f6ba811e20698a886276": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_006\\img_1.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"door",
+"side_mirror",
+"body",
+"windshield"
+],
+"normalized_parts": [
+"door",
+"side_mirror",
+"body",
+"windshield"
+],
+"damage_type": "none",
+"visible_severity": "none",
+"is_usable_image": true,
+"quality_flags": [
+"low_light_or_glare"
+],
+"raw_error": null
+},
+"fe36e5d9476a8b64b585e1c65d6648d665e2217748c08e52a114adb022f08a65": {
+"image_id": "img_2",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_007\\img_2.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"door",
+"fender",
+"body",
+"side_mirror"
+],
+"normalized_parts": [
+"door",
+"fender",
+"body",
+"side_mirror"
+],
+"damage_type": "dent",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"b6e6a2c1a3081d9e4fb46f236c7bd573d6df16149a265605af271c4b5c8c36fa": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_007\\img_1.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"body"
+],
+"normalized_parts": [
+"body"
+],
+"damage_type": "unknown",
+"visible_severity": "unknown",
+"is_usable_image": false,
+"quality_flags": [
+"blurry_image"
+],
+"raw_error": null
+},
+"94fd9989fee0db0a16b5c74054b817ef44eb0cd62e1dd6b2ce0c6d422afe9c76": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_008\\img_1.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"hood",
+"front_bumper",
+"headlight",
+"fender",
+"body",
+"windshield"
+],
+"normalized_parts": [
+"hood",
+"front_bumper",
+"headlight",
+"fender",
+"body",
+"windshield"
+],
+"damage_type": "dent",
+"visible_severity": "high",
+"is_usable_image": true,
+"quality_flags": [
+"low_light_or_glare",
+"non_original_image"
+],
+"raw_error": null
+},
+"c98f9c855af63b5266d674c52ced890029d7238f528c69e6fb226fb685291427": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_009\\img_1.jpg",
+"vision_detected_object": "laptop",
+"vision_detected_parts": [
+"screen",
+"keyboard",
+"trackpad",
+"hinge",
+"lid",
+"body",
+"base"
+],
+"normalized_parts": [
+"screen",
+"keyboard",
+"trackpad",
+"hinge",
+"lid",
+"body",
+"base"
+],
+"damage_type": "glass_shatter",
+"visible_severity": "high",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"44386cc083181cb564f7765c4034623c5e3ad72ede84b14e93e8e2f6a8789313": {
+"image_id": "img_2",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_010\\img_2.jpg",
+"vision_detected_object": "laptop",
+"vision_detected_parts": [
+"screen",
+"keyboard",
+"trackpad",
+"lid",
+"body"
+],
+"normalized_parts": [
+"screen",
+"keyboard",
+"trackpad",
+"lid",
+"body"
+],
+"damage_type": "none",
+"visible_severity": "none",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"380855296c988d9a5d4741d1bb91319a8086748b54245f9edf9b17d282aa85ff": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_010\\img_1.jpg",
+"vision_detected_object": "laptop",
+"vision_detected_parts": [
+"screen",
+"corner",
+"keyboard",
+"hinge",
+"body"
+],
+"normalized_parts": [
+"screen",
+"corner",
+"keyboard",
+"hinge",
+"body"
+],
+"damage_type": "broken_part",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"9a22cfdd7a1102c7cae856fe96ff86385cd670ca4890668209eb43949b39f00a": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_011\\img_1.jpg",
+"vision_detected_object": "laptop",
+"vision_detected_parts": [
+"keyboard",
+"body",
+"trackpad"
+],
+"normalized_parts": [
+"keyboard",
+"body",
+"trackpad"
+],
+"damage_type": "water_damage",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"3a2511dbf8e5e44cffc1f0c3e3ec13886b5ca8585d7fa044b651a43fd9961be1": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_012\\img_1.jpg",
+"vision_detected_object": "laptop",
+"vision_detected_parts": [
+"lid",
+"body"
+],
+"normalized_parts": [
+"lid",
+"body"
+],
+"damage_type": "none",
+"visible_severity": "none",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"eb6ca4553a4cb855632428325cf5dd990a0f7fde5af8d087956705d257febcb8": {
+"image_id": "img_2",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_012\\img_2.jpg",
+"vision_detected_object": "other",
+"vision_detected_parts": [
+"body"
+],
+"normalized_parts": [
+"body"
+],
+"damage_type": "stain",
+"visible_severity": "low",
+"is_usable_image": true,
+"quality_flags": [
+"blurry_image",
+"low_light_or_glare"
+],
+"raw_error": null
+},
+"7d9053071d5edf9905c5d965c78b12c5b00dad04d61db3e5f28262efceee9c1a": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_013\\img_1.jpg",
+"vision_detected_object": "laptop",
+"vision_detected_parts": [
+"screen",
+"keyboard",
+"lid"
+],
+"normalized_parts": [
+"screen",
+"keyboard",
+"lid"
+],
+"damage_type": "glass_shatter",
+"visible_severity": "high",
+"is_usable_image": true,
+"quality_flags": [
+"low_light_or_glare"
+],
+"raw_error": null
+},
+"6b9c4d561ab49e0303e5cd5346a5209cb5b32f05b97544f266e25d6ae4e350fd": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_014\\img_1.jpg",
+"vision_detected_object": "laptop",
+"vision_detected_parts": [
+"keyboard",
+"base",
+"body"
+],
+"normalized_parts": [
+"keyboard",
+"base",
+"body"
+],
+"damage_type": "scratch",
+"visible_severity": "low",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"a258ce2bf65708e943c7f974582b7376e55e3430e31ab4f33003393b7ed63f1a": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_015\\img_1.jpg",
+"vision_detected_object": "package",
+"vision_detected_parts": [
+"package_corner",
+"package_side",
+"seal",
+"label"
+],
+"normalized_parts": [
+"package_corner",
+"package_side",
+"seal",
+"label"
+],
+"damage_type": "crushed_packaging",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"bc13dd7926dcf85f20911a099b3f399d4e3bac0947f1db29bf504d6e5b844441": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_016\\img_1.jpg",
+"vision_detected_object": "package",
+"vision_detected_parts": [
+"package_side",
+"package_corner",
+"box"
+],
+"normalized_parts": [
+"package_side",
+"package_corner",
+"box"
+],
+"damage_type": "torn_packaging",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"7731d3949e37541779c34d74332bacaecc53fe2cf222e8a5ceb8f47ea94579f6": {
+"image_id": "img_2",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_016\\img_2.jpg",
+"vision_detected_object": "package",
+"vision_detected_parts": [
+"box",
+"seal"
+],
+"normalized_parts": [
+"box",
+"seal"
+],
+"damage_type": "none",
+"visible_severity": "none",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"3a56516d700c2935d91cf70528f80f4f127734f3dc64bf64ab42ecaecf8d6f24": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_017\\img_1.jpg",
+"vision_detected_object": "package",
+"vision_detected_parts": [
+"package_side",
+"package_corner",
+"label"
+],
+"normalized_parts": [
+"package_side",
+"package_corner",
+"label"
+],
+"damage_type": "water_damage",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [
+"low_light_or_glare"
+],
+"raw_error": null
+},
+"5a9601d3a67f82df77b66c71ad103856ab7732502971c945a454541753beeb9d": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_018\\img_1.jpg",
+"vision_detected_object": "package",
+"vision_detected_parts": [
+"box",
+"contents"
+],
+"normalized_parts": [
+"box",
+"contents"
+],
+"damage_type": "none",
+"visible_severity": "none",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"04311fcba62e66f932224caa1530c9284780088454b22e56576835e064c64188": {
+"image_id": "img_2",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_018\\img_2.jpg",
+"vision_detected_object": "package",
+"vision_detected_parts": [
+"package_corner",
+"seal",
+"label"
+],
+"normalized_parts": [
+"package_corner",
+"seal",
+"label"
+],
+"damage_type": "none",
+"visible_severity": "none",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"9db8ea89342200e8ada2e95cc699f81a130dfeff734c9e7123d61d7219e448de": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_019\\img_1.jpg",
+"vision_detected_object": "package",
+"vision_detected_parts": [
+"label",
+"body"
+],
+"normalized_parts": [
+"label",
+"unknown"
+],
+"damage_type": "none",
+"visible_severity": "none",
+"is_usable_image": true,
+"quality_flags": [
+"blurry_image"
+],
+"raw_error": null
+},
+"6854c89cec1069ac2124e56ac13ca488af471b1e9e0ddae82cd08c19a331fbb7": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_020\\img_1.jpg",
+"vision_detected_object": "package",
+"vision_detected_parts": [
+"package_corner",
+"seal",
+"label",
+"box"
+],
+"normalized_parts": [
+"package_corner",
+"seal",
+"label",
+"box"
+],
+"damage_type": "crushed_packaging",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [
+"text_instruction_present"
+],
+"raw_error": null
+},
+"0c57749b0f089502d04423e50352f9d7ebb38edf283e744aae029d3436bc386d": {
+"image_id": "img_2",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_020\\img_2.jpg",
+"vision_detected_object": "package",
+"vision_detected_parts": [
+"box",
+"seal"
+],
+"normalized_parts": [
+"box",
+"seal"
+],
+"damage_type": "none",
+"visible_severity": "none",
+"is_usable_image": true,
+"quality_flags": [
+"non_original_image"
+],
+"raw_error": null
+},
+"c928a2135cdca546827c5cc4955211ab3d80d26a6be65566c5c61e39083c887c": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_001\\img_1.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"rear_bumper",
+"taillight",
+"body"
+],
+"normalized_parts": [
+"rear_bumper",
+"taillight",
+"body"
+],
+"damage_type": "crushed_packaging",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"3ad1b77b5e60ce6d5ea50fe73109dc285ffb2ead3a411760b03eb7df1fd35382": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_002\\img_1.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"front_bumper",
+"headlight",
+"fender",
+"hood"
+],
+"normalized_parts": [
+"front_bumper",
+"headlight",
+"fender",
+"hood"
+],
+"damage_type": "broken_part",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"411f24743bf98cdd5fb1ffeba9263b9abfb0d819198c472efd2b32e5ed41cf4e": {
+"image_id": "img_2",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_002\\img_2.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"front_bumper",
+"hood",
+"windshield",
+"side_mirror",
+"headlight",
+"fender",
+"body"
+],
+"normalized_parts": [
+"front_bumper",
+"hood",
+"windshield",
+"side_mirror",
+"headlight",
+"fender",
+"body"
+],
+"damage_type": "none",
+"visible_severity": "none",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"9e1477759ac8c95497b2c037bcaa654f56a2b08ef40ead5cab1e939aadaecfbf": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_003\\img_1.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"windshield"
+],
+"normalized_parts": [
+"windshield"
+],
+"damage_type": "glass_shatter",
+"visible_severity": "high",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"de764932ff13cf0ad48dd8e6c9d469ca48272b5de9615a8b7fede260c323173b": {
+"image_id": "img_2",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_003\\img_2.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"windshield",
+"hood",
+"side_mirror"
+],
+"normalized_parts": [
+"windshield",
+"hood",
+"side_mirror"
+],
+"damage_type": "none",
+"visible_severity": "none",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"808084d9b10d378fddb78cbb50ea14d312d61e19775e9f67049b51cd0fba71fa": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_004\\img_1.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"side_mirror"
+],
+"normalized_parts": [
+"side_mirror"
+],
+"damage_type": "glass_shatter",
+"visible_severity": "high",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"72b7029b9fe3b113836f6f0b93dc7ed5e109beb085b0a3c28e306024e593de42": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_005\\img_1.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"front_bumper",
+"fender",
+"wheel"
+],
+"normalized_parts": [
+"front_bumper",
+"fender",
+"body"
+],
+"damage_type": "dent",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"cc7306aa9ea79006f8a6ccf670435bcc92764ec71f5a413cce3bd5357a5dac4c": {
+"image_id": "img_2",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_005\\img_2.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"rear_bumper",
+"taillight",
+"body",
+"wheel",
+"bumper"
+],
+"normalized_parts": [
+"rear_bumper",
+"taillight",
+"body",
+"unknown"
+],
+"damage_type": "none",
+"visible_severity": "none",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"0ee1a0961224fff22eb4ed05163f4d4506f58121a83e2ba173931386a3f5ca93": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_006\\img_1.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"side_mirror",
+"door",
+"body",
+"wheel"
+],
+"normalized_parts": [
+"side_mirror",
+"door",
+"body"
+],
+"damage_type": "none",
+"visible_severity": "none",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"6d5561b1248026352f229115588c56369c7e3dbe3c1e6bf7ffdf89942b33d52d": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_007\\img_1.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"side_mirror",
+"door",
+"fender",
+"quarter_panel",
+"body"
+],
+"normalized_parts": [
+"side_mirror",
+"door",
+"fender",
+"quarter_panel",
+"body"
+],
+"damage_type": "none",
+"visible_severity": "none",
+"is_usable_image": true,
+"quality_flags": [
+"blurry_image"
+],
+"raw_error": null
+},
+"88667ba15b7942222394189dd0ea8306130f27450f543bf54bfa89a9da3651cc": {
+"image_id": "img_2",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_007\\img_2.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"door",
+"fender",
+"quarter_panel",
+"body",
+"wheel",
+"tire"
+],
+"normalized_parts": [
+"door",
+"fender",
+"quarter_panel",
+"body"
+],
+"damage_type": "dent",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"de8477e2d7aecc81658d85cec5e69678810ac7c4eca854303ee632a83c496d6d": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_008\\img_1.jpg",
+"vision_detected_object": "car",
+"vision_detected_parts": [
+"front_bumper",
+"hood",
+"fender",
+"body",
+"side_mirror",
+"headlight",
+"grille",
+"engine",
+"wheel"
+],
+"normalized_parts": [
+"front_bumper",
+"hood",
+"fender",
+"body",
+"side_mirror",
+"headlight",
+"unknown"
+],
+"damage_type": "broken_part",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [
+"low_light_or_glare"
+],
+"raw_error": null
+},
+"8fac44b8c79994a2218ea3ade762a47cc0fd4e6c672c98a1474877fe6b64f992": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_009\\img_1.jpg",
+"vision_detected_object": "laptop",
+"vision_detected_parts": [
+"screen",
+"keyboard",
+"trackpad",
+"hinge",
+"lid",
+"corner",
+"base",
+"body"
+],
+"normalized_parts": [
+"screen",
+"keyboard",
+"trackpad",
+"hinge",
+"lid",
+"corner",
+"base",
+"body"
+],
+"damage_type": "glass_shatter",
+"visible_severity": "high",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"c05187242e2f9594a38fc1c516b372a9539edc06b2b638720f3ffeab1ff0973b": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_010\\img_1.jpg",
+"vision_detected_object": "laptop",
+"vision_detected_parts": [
+"screen",
+"hinge",
+"corner",
+"keyboard"
+],
+"normalized_parts": [
+"screen",
+"hinge",
+"corner",
+"keyboard"
+],
+"damage_type": "crack",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [
+"low_light_or_glare"
+],
+"raw_error": null
+},
+"8ce7454deeef619461a4b5a372bf5b4d95b7d03a46df7a6391b4b619c8cd58a5": {
+"image_id": "img_2",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_010\\img_2.jpg",
+"vision_detected_object": "laptop",
+"vision_detected_parts": [
+"screen",
+"keyboard",
+"trackpad",
+"hinge",
+"lid",
+"base",
+"body"
+],
+"normalized_parts": [
+"screen",
+"keyboard",
+"trackpad",
+"hinge",
+"lid",
+"base",
+"body"
+],
+"damage_type": "none",
+"visible_severity": "none",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"ff78390a7ca7746ddee22730019ab4b0a17d80579d8c1999b90cec564080f31e": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_011\\img_1.jpg",
+"vision_detected_object": "laptop",
+"vision_detected_parts": [
+"keyboard",
+"trackpad",
+"base"
+],
+"normalized_parts": [
+"keyboard",
+"trackpad",
+"base"
+],
+"damage_type": "water_damage",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"a82788f20472410b7fc8f1481cf377a2256c6232cd850dce29e5e9c4b55ef0f8": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_012\\img_1.jpg",
+"vision_detected_object": "laptop",
+"vision_detected_parts": [
+"lid",
+"body",
+"corner"
+],
+"normalized_parts": [
+"lid",
+"body",
+"corner"
+],
+"damage_type": "none",
+"visible_severity": "none",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"cfb266fdfe4e56fc7aac6e9d3f576a5e6438903e9876454626736587b72016a9": {
+"image_id": "img_2",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_012\\img_2.jpg",
+"vision_detected_object": "laptop",
+"vision_detected_parts": [
+"lid",
+"corner"
+],
+"normalized_parts": [
+"lid",
+"corner"
+],
+"damage_type": "dent",
+"visible_severity": "low",
+"is_usable_image": true,
+"quality_flags": [
+"low_light_or_glare"
+],
+"raw_error": null
+},
+"e70b677858838ff64ac5410108659fc67025393b2809f227b07301f8f7689875": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_013\\img_1.jpg",
+"vision_detected_object": "laptop",
+"vision_detected_parts": [
+"screen",
+"keyboard",
+"lid",
+"body"
+],
+"normalized_parts": [
+"screen",
+"keyboard",
+"lid",
+"body"
+],
+"damage_type": "glass_shatter",
+"visible_severity": "high",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"f8810bc656dea1faa331b20b42a14ad7ee0bbff3cb4bb85fa41cce9b7bc1422d": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_014\\img_1.jpg",
+"vision_detected_object": "laptop",
+"vision_detected_parts": [
+"keyboard",
+"trackpad",
+"corner",
+"base"
+],
+"normalized_parts": [
+"keyboard",
+"trackpad",
+"corner",
+"base"
+],
+"damage_type": "scratch",
+"visible_severity": "low",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"1d17fc262c3c4565950f4759f2992eb8e02fc7ee80f11e223299266b7f50588e": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_015\\img_1.jpg",
+"vision_detected_object": "package",
+"vision_detected_parts": [
+"package_corner",
+"seal",
+"label"
+],
+"normalized_parts": [
+"package_corner",
+"seal",
+"label"
+],
+"damage_type": "torn_packaging",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"c53d6c98d134f08156f2c74fa77dd29f481f25e2af68758116981fd9d43e5949": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_016\\img_1.jpg",
+"vision_detected_object": "package",
+"vision_detected_parts": [
+"package_corner",
+"package_side",
+"seal",
+"box"
+],
+"normalized_parts": [
+"package_corner",
+"package_side",
+"seal",
+"box"
+],
+"damage_type": "torn_packaging",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"7dbe3cdcc5e3dd078f4e72fd6702db75516ae411efd2b7f202fa88af7594da70": {
+"image_id": "img_2",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_016\\img_2.jpg",
+"vision_detected_object": "package",
+"vision_detected_parts": [
+"package_corner",
+"package_side",
+"seal",
+"box"
+],
+"normalized_parts": [
+"package_corner",
+"package_side",
+"seal",
+"box"
+],
+"damage_type": "none",
+"visible_severity": "none",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"784b01e9e357d72b1c40181ab9cf5cd1ba54bf1daeb178c7a81dbb373d095bc5": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_017\\img_1.jpg",
+"vision_detected_object": "package",
+"vision_detected_parts": [
+"package_corner",
+"package_side"
+],
+"normalized_parts": [
+"package_corner",
+"package_side"
+],
+"damage_type": "torn_packaging",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [
+"cropped_or_obstructed"
+],
+"raw_error": null
+},
+"9ce97ab0c0ba10afe235ec5346d0b1619853b8d0db1efd5593610e70f6099a37": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_018\\img_1.jpg",
+"vision_detected_object": "package",
+"vision_detected_parts": [
+"box",
+"contents"
+],
+"normalized_parts": [
+"box",
+"contents"
+],
+"damage_type": "crushed_packaging",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"8664ee12465bdd130969884596732fbe6bd9d4d1585bad6f977d88d967f81ff3": {
+"image_id": "img_2",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_018\\img_2.jpg",
+"vision_detected_object": "package",
+"vision_detected_parts": [
+"package_corner",
+"seal",
+"label",
+"box"
+],
+"normalized_parts": [
+"package_corner",
+"seal",
+"label",
+"box"
+],
+"damage_type": "none",
+"visible_severity": "none",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"7764bb6259619f6aa8bb759c0cfed067151a899fde9b9220979298d4fa9fe369": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_019\\img_1.jpg",
+"vision_detected_object": "package",
+"vision_detected_parts": [
+"package_side",
+"label"
+],
+"normalized_parts": [
+"package_side",
+"label"
+],
+"damage_type": "torn_packaging",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"21ba4adf2271457aeda8a2cd56f1ec016d3b2518cea60e2c906350fec190addc": {
+"image_id": "img_1",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_020\\img_1.jpg",
+"vision_detected_object": "package",
+"vision_detected_parts": [
+"package_corner",
+"package_side",
+"seal",
+"label",
+"box"
+],
+"normalized_parts": [
+"package_corner",
+"package_side",
+"seal",
+"label",
+"box"
+],
+"damage_type": "torn_packaging",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+},
+"ed6690c3cbe001df47c5bc1d9e61077da8a9453ccb4f2907f2df68fc90867c31": {
+"image_id": "img_2",
+"image_path": "D:\\Coding\\hackerrank-orchestrate-june26\\dataset\\images\\sample\\case_020\\img_2.jpg",
+"vision_detected_object": "package",
+"vision_detected_parts": [
+"package_corner",
+"seal",
+"box"
+],
+"normalized_parts": [
+"package_corner",
+"seal",
+"box"
+],
+"damage_type": "torn_packaging",
+"visible_severity": "medium",
+"is_usable_image": true,
+"quality_flags": [],
+"raw_error": null
+}
+}

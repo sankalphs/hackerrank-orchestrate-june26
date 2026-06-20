@@ -15,6 +15,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import logging
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -28,6 +29,8 @@ from config import (
     VISION_MODEL_STRATEGY1,
     VISION_MODEL_STRATEGY2,
     VISION_TEMPERATURE,
+    VISION_VOTE_ROUNDS,
+    VISION_VOTE_TEMPERATURE,
 )
 from llm_clients import call_nvidia, call_token_router
 from prompts import VISION_SYSTEM, VISION_USER
@@ -35,6 +38,93 @@ from schema import ISSUE_TYPES, SEVERITIES, clamp_enum, normalize_part
 from state import ClaimState, VisionRecord
 
 logger = logging.getLogger(__name__)
+
+
+def _majority_vote(values: list[str]) -> str:
+    """Return the most common value; ties broken by first occurrence."""
+    if not values:
+        return "unknown"
+    counts: Counter = Counter(values)
+    return counts.most_common(1)[0][0]
+
+
+def _vote_severity(severities: list[str]) -> str:
+    """Majority vote on severity; if all differ, take the median (conservative)."""
+    if not severities:
+        return "unknown"
+    counts: Counter = Counter(severities)
+    if counts.most_common(1)[0][1] >= 2:
+        return counts.most_common(1)[0][0]
+    rank = {"none": 0, "low": 1, "medium": 2, "high": 3, "unknown": -1}
+    known = [s for s in severities if s in rank and s != "unknown"]
+    if not known:
+        return "unknown"
+    known.sort(key=lambda s: rank[s])
+    return known[len(known) // 2]
+
+
+def _vote_quality_flags(all_flags: list[list[str]]) -> list[str]:
+    """Flags that appear in majority of runs (>= half)."""
+    if not all_flags:
+        return []
+    threshold = len(all_flags) / 2.0
+    counts: Counter = Counter()
+    for flags in all_flags:
+        for f in set(flags):
+            counts[f] += 1
+    return [f for f, c in counts.items() if c >= threshold]
+
+
+def _vote_parts(all_parts: list[list[str]], fallback_all: list[list[str]]) -> list[str]:
+    """Parts that appear in majority of runs; if none, fall back to union."""
+    if not all_parts:
+        return []
+    threshold = len(all_parts) / 2.0
+    counts: Counter = Counter()
+    for parts in all_parts:
+        for p in set(parts):
+            counts[p] += 1
+    voted = [p for p, c in counts.items() if c >= threshold]
+    if not voted:
+        voted = list(set(p for parts in fallback_all for p in parts))
+    return voted
+
+
+def _vote_records(records: list[VisionRecord], claim_object: str) -> VisionRecord:
+    """Combine N vision records via majority voting into a single consensus record."""
+    if len(records) == 1:
+        return records[0]
+    image_id = records[0]["image_id"]
+    image_path = records[0]["image_path"]
+
+    objects = [r.get("vision_detected_object", "unknown") for r in records]
+    damage_types = [r.get("damage_type", "unknown") for r in records]
+    severities = [r.get("visible_severity", "unknown") for r in records]
+    usable = [r.get("is_usable_image", True) for r in records]
+    all_quality = [r.get("quality_flags", []) for r in records]
+    all_parts_raw = [r.get("vision_detected_parts", []) for r in records]
+    all_parts_norm = [r.get("normalized_parts", []) for r in records]
+
+    voted_object = _majority_vote(objects)
+    voted_damage = _majority_vote(damage_types)
+    voted_severity = _vote_severity(severities)
+    voted_usable = any(usable)
+    voted_quality = _vote_quality_flags(all_quality)
+    voted_parts_raw = _vote_parts(all_parts_raw, all_parts_raw)
+    voted_parts_norm = _vote_parts(all_parts_norm, all_parts_norm)
+
+    return VisionRecord(
+        image_id=image_id,
+        image_path=image_path,
+        vision_detected_object=voted_object,
+        vision_detected_parts=voted_parts_raw,
+        normalized_parts=voted_parts_norm,
+        damage_type=voted_damage,
+        visible_severity=voted_severity,
+        is_usable_image=voted_usable,
+        quality_flags=voted_quality,
+        raw_error=None,
+    )
 
 
 def _get_nim_semaphore() -> asyncio.Semaphore:
@@ -125,15 +215,21 @@ def _normalize_vision_record(
     )
 
 
-async def _call_vision_single(image_path: str, strategy: str, claim_object: str) -> VisionRecord:
-    """Call the vision model for one image, with caching + retry + escape hatch."""
-    image_id = _image_id_from_path(image_path)
+async def _call_vision_single(
+    image_path: str, strategy: str, claim_object: str, vote_idx: int = 0
+) -> VisionRecord:
+    """Call the vision model for one image, with caching + retry + escape hatch.
 
-    cached = cache.get_cached_vision(image_path)
+    vote_idx > 0 enables self-consistency voting (higher temperature for diversity).
+    """
+    image_id = _image_id_from_path(image_path)
+    model = VISION_MODEL_STRATEGY1 if strategy == STRATEGY1 else VISION_MODEL_STRATEGY2
+
+    cached = cache.get_cached_vision(image_path, model=model, vote_idx=vote_idx)
     if cached is not None:
         cache.log_call(
             node="vision",
-            model=(VISION_MODEL_STRATEGY1 if strategy == STRATEGY1 else VISION_MODEL_STRATEGY2),
+            model=model,
             strategy=strategy,
             image_id=image_id,
             cached=True,
@@ -146,7 +242,7 @@ async def _call_vision_single(image_path: str, strategy: str, claim_object: str)
         logger.warning("Image build failed for %s: %s", image_id, e)
         cache.log_call(
             node="vision",
-            model=(VISION_MODEL_STRATEGY1 if strategy == STRATEGY1 else VISION_MODEL_STRATEGY2),
+            model=model,
             strategy=strategy,
             image_id=image_id,
             error=f"image_build_failed: {type(e).__name__}: {str(e)[:100]}",
@@ -164,17 +260,17 @@ async def _call_vision_single(image_path: str, strategy: str, claim_object: str)
             raw_error=f"image_build_failed: {type(e).__name__}",
         )
 
+    temp = VISION_VOTE_TEMPERATURE if vote_idx > 0 else VISION_TEMPERATURE
     parsed = None
     api_error = None
     if strategy == STRATEGY1:
-        model = VISION_MODEL_STRATEGY1
         try:
             _, parsed = await asyncio.to_thread(
                 call_token_router,
                 messages,
                 model=model,
                 max_tokens=VISION_MAX_TOKENS,
-                temperature=VISION_TEMPERATURE,
+                temperature=temp,
                 extra_body={"chat_template_kwargs": {"enable_thinking": False}},
                 node="vision",
                 strategy=strategy,
@@ -184,7 +280,6 @@ async def _call_vision_single(image_path: str, strategy: str, claim_object: str)
             api_error = f"{type(e).__name__}: {str(e)[:200]}"
             logger.warning("Vision API failed for %s: %s", image_id, api_error)
     else:
-        model = VISION_MODEL_STRATEGY2
         sem = _get_nim_semaphore()
         async with sem:
             await asyncio.sleep(NIM_SLEEP_SECONDS)
@@ -194,7 +289,7 @@ async def _call_vision_single(image_path: str, strategy: str, claim_object: str)
                     messages,
                     model=model,
                     max_tokens=VISION_MAX_TOKENS,
-                    temperature=VISION_TEMPERATURE,
+                    temperature=temp,
                     extra_body={"chat_template_kwargs": {"enable_thinking": False}, "top_k": 1},
                     node="vision",
                     strategy=strategy,
@@ -235,10 +330,10 @@ async def _call_vision_single(image_path: str, strategy: str, claim_object: str)
 
     record = _normalize_vision_record(parsed, image_id, image_path, claim_object)
 
-    if record["is_usable_image"] and record["damage_type"] == "unknown":
+    if record["is_usable_image"] and record["damage_type"] == "unknown" and vote_idx == 0:
         record = await _escape_hatch(image_path, image_id, strategy, claim_object, record)
 
-    cache.set_cached_vision(image_path, dict(record))
+    cache.set_cached_vision(image_path, dict(record), model=model, vote_idx=vote_idx)
     return record
 
 
@@ -288,8 +383,22 @@ async def _escape_hatch(
 async def _vision_loop_async(
     image_paths: list[str], strategy: str, claim_object: str
 ) -> list[VisionRecord]:
-    tasks = [_call_vision_single(p, strategy, claim_object) for p in image_paths]
-    return await asyncio.gather(*tasks)
+    """Run N=VISION_VOTE_ROUNDS calls per image in parallel, then majority-vote."""
+    tasks = []
+    for p in image_paths:
+        for vote_idx in range(VISION_VOTE_ROUNDS):
+            tasks.append(_call_vision_single(p, strategy, claim_object, vote_idx))
+    flat = await asyncio.gather(*tasks)
+
+    records: list[VisionRecord] = []
+    for i, p in enumerate(image_paths):
+        per_image = flat[i * VISION_VOTE_ROUNDS:(i + 1) * VISION_VOTE_ROUNDS]
+        non_error = [r for r in per_image if not r.get("raw_error")]
+        if not non_error:
+            records.append(per_image[0])
+            continue
+        records.append(_vote_records(non_error, claim_object))
+    return records
 
 
 def vision_node(state: ClaimState) -> dict[str, Any]:

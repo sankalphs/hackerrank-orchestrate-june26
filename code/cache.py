@@ -18,8 +18,13 @@ def _ensure_dirs() -> None:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def vision_cache_key(image_path: str, prompt_version: str = PROMPT_VERSION) -> str:
-    """Stable hash key for a vision call: file content hash + prompt version."""
+def vision_cache_key(
+    image_path: str,
+    prompt_version: str = PROMPT_VERSION,
+    model: str = "",
+    vote_idx: int | None = None,
+) -> str:
+    """Stable hash key for a vision call: file content hash + prompt version + model + vote round."""
     p = Path(image_path)
     h = hashlib.sha256()
     if p.exists():
@@ -27,6 +32,9 @@ def vision_cache_key(image_path: str, prompt_version: str = PROMPT_VERSION) -> s
     else:
         h.update(image_path.encode("utf-8"))
     h.update(prompt_version.encode("utf-8"))
+    h.update(model.encode("utf-8"))
+    if vote_idx is not None:
+        h.update(f"vote{vote_idx}".encode("utf-8"))
     return h.hexdigest()
 
 
@@ -47,15 +55,15 @@ def save_vision_cache(cache: dict[str, dict]) -> None:
     tmp.replace(VISION_CACHE)
 
 
-def get_cached_vision(image_path: str) -> dict | None:
-    key = vision_cache_key(image_path)
+def get_cached_vision(image_path: str, model: str = "", vote_idx: int | None = None) -> dict | None:
+    key = vision_cache_key(image_path, model=model, vote_idx=vote_idx)
     with _CACHE_LOCK:
         cache = load_vision_cache()
         return cache.get(key)
 
 
-def set_cached_vision(image_path: str, record: dict) -> None:
-    key = vision_cache_key(image_path)
+def set_cached_vision(image_path: str, record: dict, model: str = "", vote_idx: int | None = None) -> None:
+    key = vision_cache_key(image_path, model=model, vote_idx=vote_idx)
     with _CACHE_LOCK:
         cache = load_vision_cache()
         cache[key] = record

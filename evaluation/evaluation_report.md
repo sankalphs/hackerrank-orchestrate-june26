@@ -1,6 +1,6 @@
 # Evaluation Report
 
-_Generated: 2026-06-20T05:04:44.666645_
+_Generated: 2026-06-20T09:24:59.232756_
 
 ## Summary
 
@@ -29,61 +29,47 @@ _Generated: 2026-06-20T05:04:44.666645_
 ### Claim status confusion matrix
 | actual \ predicted | contradicted | not_enough_information | supported |
 |---|---|---|---|
-| **contradicted** | 3 | 0 | 2 |
-| **not_enough_information** | 2 | 0 | 0 |
+| **contradicted** | 2 | 0 | 3 |
+| **not_enough_information** | 1 | 1 | 0 |
 | **supported** | 0 | 2 | 11 |
 
 
 ## Strategy 2: `m3_text_nemotron_vision` (M3 text + Nemotron Omni vision)
 
-- Weighted score: **67.7%**
-- Matched rows: 20
+- Weighted score: **0.0%**
+- Matched rows: 0
 
 ### Per-column accuracy
 | Column | Accuracy |
 |---|---|
-| evidence_standard_met | 85.0% (17/20) |
-| evidence_standard_met_reason | 0.0% (0/20) |
-| risk_flags | 35.0% (7/20) |
-| issue_type | 35.0% (7/20) |
-| object_part | 80.0% (16/20) |
-| claim_status | 70.0% (14/20) |
-| claim_status_justification | 0.0% (0/20) |
-| supporting_image_ids | 70.0% (14/20) |
-| valid_image | 90.0% (18/20) |
-| severity | 55.0% (11/20) |
 
 ### Claim status confusion matrix
-| actual \ predicted | contradicted | not_enough_information | supported |
-|---|---|---|---|
-| **contradicted** | 3 | 0 | 2 |
-| **not_enough_information** | 2 | 0 | 0 |
-| **supported** | 0 | 2 | 11 |
+_No data_
 
 
 ## Operational Analysis
 
 | Metric | Strategy 1 (m3_only) | Strategy 2 (m3_text+omni) |
 |---|---|---|
-| Total API calls | 69 | 40 |
-| Cached calls | 0 | 29 |
+| Total API calls | 119 | 40 |
+| Cached calls | 37 | 29 |
 | Errors | 0 | 0 |
-| Prompt tokens | 80,282 | 19,472 |
-| Completion tokens | 14,920 | 6,524 |
-| Total tokens | 95,202 | 25,996 |
-| p50 latency (ms) | 5007 | 4459 |
-| p95 latency (ms) | 15313 | 10293 |
+| Prompt tokens | 104,628 | 19,472 |
+| Completion tokens | 22,783 | 6,524 |
+| Total tokens | 127,411 | 25,996 |
+| p50 latency (ms) | 4919 | 4459 |
+| p95 latency (ms) | 15832 | 10293 |
 
 
 ### Models Used
 
-- Strategy 1: {'MiniMax-M3': 69}
+- Strategy 1: {'MiniMax-M3': 156}
 - Strategy 2: {'MiniMax-M3': 40, 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning': 29}
 
 
 ### Node Distribution
 
-- Strategy 1: {'parse': 20, 'vision': 29, 'adjudicate': 20}
+- Strategy 1: {'parse': 45, 'vision': 66, 'adjudicate': 45}
 - Strategy 2: {'parse': 20, 'vision': 29, 'adjudicate': 20}
 
 

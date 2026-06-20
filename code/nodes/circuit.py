@@ -75,6 +75,14 @@ def _part_matches(claimed_part: str, vision_parts: list[str]) -> bool:
     for vp in vision_parts:
         if vp == claimed_part:
             return True
+    PACKAGE_SURFACE_PARTS = {
+        "package_corner",
+        "package_side",
+        "seal",
+        "label",
+    }
+    if claimed_part in PACKAGE_SURFACE_PARTS and "box" in vision_parts:
+        return True
     return False
 
 
@@ -269,6 +277,11 @@ def circuit_node(state: ClaimState) -> dict[str, Any]:
             elif no_damage_visible_on_part and claimed_issue_type not in ("missing_part",):
                 if "damage_not_visible" not in risk_flags:
                     risk_flags.append("damage_not_visible")
+                if "claim_mismatch" not in risk_flags:
+                    risk_flags.append("claim_mismatch")
+                contradiction_reasons.append(
+                    f"Claimed issue '{claimed_issue_type}' but no damage is visible on the claimed part"
+                )
 
     vision_severities = [r.get("visible_severity", "unknown") for r in usable]
     vision_severities_on_claimed: list[str] = []

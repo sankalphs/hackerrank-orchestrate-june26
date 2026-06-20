@@ -25,10 +25,10 @@ def clamp_node(state: ClaimState) -> dict[str, Any]:
     evidence_met = state.get("evidence_standard_met", True)
     base_status = state.get("base_claim_status", "not_enough_information")
 
-    if contradiction_flag:
-        final_status = "contradicted"
-    elif not evidence_met:
+    if not evidence_met:
         final_status = "not_enough_information"
+    elif contradiction_flag:
+        final_status = "contradicted"
     else:
         final_status = clamp_enum(base_status, CLAIM_STATUS, "not_enough_information")
 

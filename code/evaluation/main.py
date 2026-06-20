@@ -15,6 +15,7 @@ from config import (
     SAMPLE_CLAIMS_CSV,
     STRATEGY1,
     STRATEGY2,
+    STRATEGY3,
 )
 from graph import build_graph
 from main import _format_output_row, _split_image_paths, _split_image_paths_raw
@@ -100,6 +101,7 @@ def main():
     )
     parser.add_argument("--strategy1-only", action="store_true", help="Run only Strategy 1")
     parser.add_argument("--strategy2-only", action="store_true", help="Run only Strategy 2")
+    parser.add_argument("--strategy3-only", action="store_true", help="Run only Strategy 3 (ensemble)")
     args = parser.parse_args()
 
     if args.reset_cache:
@@ -113,17 +115,23 @@ def main():
 
     results: dict = {}
 
-    if not args.strategy2_only:
+    if not args.strategy2_only and not args.strategy3_only:
         logger.info("=== Running Strategy 1: %s ===", STRATEGY1)
         s1_rows = _run_strategy(STRATEGY1, ground_truth, args.limit)
         _write_predictions(s1_rows, EVAL_OUTPUT_DIR / f"predictions_{STRATEGY1}.csv")
         results["strategy1"] = evaluate_predictions(s1_rows, ground_truth)
 
-    if not args.strategy1_only:
+    if not args.strategy1_only and not args.strategy3_only:
         logger.info("=== Running Strategy 2: %s ===", STRATEGY2)
         s2_rows = _run_strategy(STRATEGY2, ground_truth, args.limit)
         _write_predictions(s2_rows, EVAL_OUTPUT_DIR / f"predictions_{STRATEGY2}.csv")
         results["strategy2"] = evaluate_predictions(s2_rows, ground_truth)
+
+    if not args.strategy1_only and not args.strategy2_only:
+        logger.info("=== Running Strategy 3: %s (ensemble) ===", STRATEGY3)
+        s3_rows = _run_strategy(STRATEGY3, ground_truth, args.limit)
+        _write_predictions(s3_rows, EVAL_OUTPUT_DIR / f"predictions_{STRATEGY3}.csv")
+        results["strategy3"] = evaluate_predictions(s3_rows, ground_truth)
 
     report = build_report(
         results.get(
@@ -148,6 +156,7 @@ def main():
                 "weighted_score": 0.0,
             },
         ),
+        results.get("strategy3"),
     )
     EVAL_DIR.mkdir(parents=True, exist_ok=True)
     REPORT_PATH.write_text(report, encoding="utf-8")

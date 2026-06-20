@@ -52,19 +52,24 @@ def _summarize_call_log(call_log: list[dict], strategy: str) -> dict[str, Any]:
 def build_report(
     strategy1_results: dict,
     strategy2_results: dict,
+    strategy3_results: dict | None = None,
     strategy1_name: str = "m3_only",
     strategy2_name: str = "m3_text_nemotron_vision",
+    strategy3_name: str = "m3_nemotron_ensemble",
 ) -> str:
     """Build the full markdown evaluation report."""
     log = read_call_log()
     s1_ops = _summarize_call_log(log, strategy1_name)
     s2_ops = _summarize_call_log(log, strategy2_name)
+    s3_ops = _summarize_call_log(log, strategy3_name) if strategy3_results else None
 
-    winner = (
-        strategy1_name
-        if strategy1_results["weighted_score"] >= strategy2_results["weighted_score"]
-        else strategy2_name
-    )
+    candidates = [
+        (strategy1_name, strategy1_results),
+        (strategy2_name, strategy2_results),
+    ]
+    if strategy3_results:
+        candidates.append((strategy3_name, strategy3_results))
+    winner_name, winner_results = max(candidates, key=lambda x: x[1]["weighted_score"])
 
     sections: list[str] = []
     sections.append("# Evaluation Report\n")
@@ -72,7 +77,7 @@ def build_report(
 
     sections.append("## Summary\n")
     sections.append(
-        f"- **Winning strategy:** `{winner}` (weighted score {max(strategy1_results['weighted_score'], strategy2_results['weighted_score']):.1%})"
+        f"- **Winning strategy:** `{winner_name}` (weighted score {winner_results['weighted_score']:.1%})"
     )
     sections.append(
         f"- **Rows evaluated:** {strategy1_results['matched_rows']} (sample_claims.csv)"
@@ -85,35 +90,37 @@ def build_report(
     sections.append("\n## Strategy 2: `m3_text_nemotron_vision` (M3 text + Nemotron Omni vision)\n")
     _add_strategy_section(sections, strategy2_results, s2_ops)
 
+    if strategy3_results:
+        sections.append("\n## Strategy 3: `m3_nemotron_ensemble` (M3 + Nemotron reconciled)\n")
+        _add_strategy_section(sections, strategy3_results, s3_ops)
+
     sections.append("\n## Operational Analysis\n")
-    sections.append("| Metric | Strategy 1 (m3_only) | Strategy 2 (m3_text+omni) |")
-    sections.append("|---|---|---|")
-    sections.append(f"| Total API calls | {s1_ops['total_calls']} | {s2_ops['total_calls']} |")
-    sections.append(f"| Cached calls | {s1_ops['cached_calls']} | {s2_ops['cached_calls']} |")
-    sections.append(f"| Errors | {s1_ops['errors']} | {s2_ops['errors']} |")
-    sections.append(
-        f"| Prompt tokens | {s1_ops['total_prompt_tokens']:,} | {s2_ops['total_prompt_tokens']:,} |"
-    )
-    sections.append(
-        f"| Completion tokens | {s1_ops['total_completion_tokens']:,} | {s2_ops['total_completion_tokens']:,} |"
-    )
-    sections.append(f"| Total tokens | {s1_ops['total_tokens']:,} | {s2_ops['total_tokens']:,} |")
-    sections.append(
-        f"| p50 latency (ms) | {s1_ops['p50_latency_ms']} | {s2_ops['p50_latency_ms']} |"
-    )
-    sections.append(
-        f"| p95 latency (ms) | {s1_ops['p95_latency_ms']} | {s2_ops['p95_latency_ms']} |"
-    )
+    header_cols = ["Strategy 1 (m3_only)", "Strategy 2 (m3_text+omni)"]
+    if strategy3_results:
+        header_cols.append("Strategy 3 (ensemble)")
+    sections.append("| Metric | " + " | ".join(header_cols) + " |")
+    sections.append("|" + "|".join(["---"] * (len(header_cols) + 1)) + "|")
+    s_cells = [s1_ops, s2_ops]
+    if strategy3_results:
+        s_cells.append(s3_ops)
+    for metric in ["total_calls", "cached_calls", "errors", "total_prompt_tokens", "total_completion_tokens", "total_tokens", "p50_latency_ms", "p95_latency_ms"]:
+        key = metric
+        vals = [str(c[key]) for c in s_cells]
+        sections.append(f"| {metric} | " + " | ".join(vals) + " |")
     sections.append("")
 
     sections.append("\n### Models Used\n")
     sections.append(f"- Strategy 1: {s1_ops['models']}")
     sections.append(f"- Strategy 2: {s2_ops['models']}")
+    if strategy3_results:
+        sections.append(f"- Strategy 3: {s3_ops['models']}")
     sections.append("")
 
     sections.append("\n### Node Distribution\n")
     sections.append(f"- Strategy 1: {s1_ops['nodes']}")
     sections.append(f"- Strategy 2: {s2_ops['nodes']}")
+    if strategy3_results:
+        sections.append(f"- Strategy 3: {s3_ops['nodes']}")
     sections.append("")
 
     sections.append("\n## Cost & Quota Notes\n")
@@ -124,7 +131,7 @@ def build_report(
         "- **NVIDIA NIM (Nemotron Omni):** free tier, ~40 RPM. We use Semaphore(1) + 1.6s sleep + tenacity retry."
     )
     sections.append(
-        "- **Caching:** vision calls are cached by sha256(image) so re-runs hit the cache for free."
+        "- **Caching:** vision calls are cached by sha256(image) + model + prompt_version + vote round."
     )
     sections.append(
         "- **TPM awareness:** both providers return usage; we log it. NIM may have TPM caps in addition to RPM."
@@ -133,7 +140,7 @@ def build_report(
 
     sections.append("\n## Recommended Configuration for test set\n")
     sections.append(
-        f"Use **`{winner}`** for the final `output.csv` generation on `dataset/claims.csv`."
+        f"Use **`{winner_name}`** for the final `output.csv` generation on `dataset/claims.csv`."
     )
     sections.append("")
 

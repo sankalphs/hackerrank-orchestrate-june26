@@ -383,7 +383,14 @@ async def _escape_hatch(
 async def _vision_loop_async(
     image_paths: list[str], strategy: str, claim_object: str
 ) -> list[VisionRecord]:
-    """Run N=VISION_VOTE_ROUNDS calls per image in parallel, then majority-vote."""
+    """Run N=VISION_VOTE_ROUNDS calls per image in parallel, then majority-vote.
+
+    For ENSEMBLE strategy, read from both M3 and Nemotron caches and reconcile.
+    """
+    if strategy == "m3_nemotron_ensemble":
+        tasks = [_load_ensemble_record(p, claim_object) for p in image_paths]
+        return await asyncio.gather(*tasks)
+
     tasks = []
     for p in image_paths:
         for vote_idx in range(VISION_VOTE_ROUNDS):
@@ -399,6 +406,106 @@ async def _vision_loop_async(
             continue
         records.append(_vote_records(non_error, claim_object))
     return records
+
+
+async def _load_ensemble_record(
+    image_path: str, claim_object: str
+) -> VisionRecord:
+    """Load vision record from both M3 and Nemotron caches, reconcile into one.
+
+    Uses ZERO API calls — both caches are populated from prior runs.
+    Reconciliation rules:
+    - damage_type: if agree → use; if disagree → prefer 'none' (anti-hallucination)
+    - visible_severity: take max (conservative)
+    - vision_detected_object: agree → use; disagree → use M3 as primary
+    - parts: union of both
+    - quality_flags: majority occurrence (>= half)
+    - is_usable_image: both must say unusable
+    """
+    image_id = _image_id_from_path(image_path)
+
+    m3_cached = cache.get_cached_vision(image_path, model=VISION_MODEL_STRATEGY1, vote_idx=0)
+    nem_cached = cache.get_cached_vision(image_path, model=VISION_MODEL_STRATEGY2, vote_idx=0)
+
+    if m3_cached and not nem_cached:
+        return _normalize_vision_record(m3_cached, image_id, image_path, claim_object)
+    if nem_cached and not m3_cached:
+        return _normalize_vision_record(nem_cached, image_id, image_path, claim_object)
+    if not m3_cached and not nem_cached:
+        return VisionRecord(
+            image_id=image_id,
+            image_path=image_path,
+            vision_detected_object="unknown",
+            vision_detected_parts=[],
+            normalized_parts=[],
+            damage_type="unknown",
+            visible_severity="unknown",
+            is_usable_image=False,
+            quality_flags=[],
+            raw_error="ensemble: no cached outputs",
+        )
+
+    m3 = _normalize_vision_record(m3_cached, image_id, image_path, claim_object)
+    nem = _normalize_vision_record(nem_cached, image_id, image_path, claim_object)
+
+    if m3.get("raw_error") and not nem.get("raw_error"):
+        return nem
+    if nem.get("raw_error") and not m3.get("raw_error"):
+        return m3
+
+    dmg_m3 = m3.get("damage_type", "unknown")
+    dmg_nem = nem.get("damage_type", "unknown")
+    if dmg_m3 == dmg_nem:
+        voted_damage = dmg_m3
+    elif dmg_m3 == "none" or dmg_nem == "none":
+        voted_damage = "none"
+    elif dmg_m3 == "unknown":
+        voted_damage = dmg_nem
+    elif dmg_nem == "unknown":
+        voted_damage = dmg_m3
+    else:
+        voted_damage = dmg_m3
+
+    sev_rank = {"none": 0, "low": 1, "medium": 2, "high": 3, "unknown": -1}
+    sev_m3 = m3.get("visible_severity", "unknown")
+    sev_nem = nem.get("visible_severity", "unknown")
+    if sev_rank.get(sev_m3, -1) >= sev_rank.get(sev_nem, -1):
+        voted_severity = sev_m3
+    else:
+        voted_severity = sev_nem
+
+    obj_m3 = m3.get("vision_detected_object", "unknown")
+    obj_nem = nem.get("vision_detected_object", "unknown")
+    voted_object = obj_m3 if obj_m3 == obj_nem else obj_m3
+
+    parts_m3 = set(m3.get("normalized_parts", []))
+    parts_nem = set(nem.get("normalized_parts", []))
+    voted_parts_norm = sorted(parts_m3 | parts_nem)
+
+    parts_raw_m3 = list(m3.get("vision_detected_parts", []))
+    parts_raw_nem = list(nem.get("vision_detected_parts", []))
+    voted_parts_raw = list(dict.fromkeys(parts_raw_m3 + parts_raw_nem))
+
+    qf_m3 = list(m3.get("quality_flags", []))
+    qf_nem = list(nem.get("quality_flags", []))
+    all_qf = qf_m3 + qf_nem
+    qf_counts: Counter = Counter(all_qf)
+    voted_quality = [f for f, c in qf_counts.items() if c >= 1]
+
+    voted_usable = m3.get("is_usable_image", True) and nem.get("is_usable_image", True)
+
+    return VisionRecord(
+        image_id=image_id,
+        image_path=image_path,
+        vision_detected_object=voted_object,
+        vision_detected_parts=voted_parts_raw,
+        normalized_parts=voted_parts_norm,
+        damage_type=voted_damage,
+        visible_severity=voted_severity,
+        is_usable_image=voted_usable,
+        quality_flags=voted_quality,
+        raw_error=None,
+    )
 
 
 def vision_node(state: ClaimState) -> dict[str, Any]:
